@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using ClientesAPI.Data;
+using ClientesAPI.Data.Dtos;
 using ClientesAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,19 @@ namespace ClientesAPI.Controllers
 
 
         [HttpPost]
-        public IActionResult AdicionaCliente([FromBody] Cliente cliente)
+        public IActionResult AdicionaCliente([FromBody] CriarClienteDto clienteDto)
         {
+            Cliente cliente = new Cliente
+            {
+                Nome = clienteDto.Nome,
+                Telefone = clienteDto.Telefone,
+                DataNascimento = clienteDto.DataNascimento,
+                DataUltimaCompra = clienteDto.DataUltimaCompra,
+                ValorUltimaCompra = clienteDto.ValorUltimaCompra,
+                ValorTotalCompras = clienteDto.ValorTotalCompras
+
+            };
+
             _context.Clientes.Add(cliente);
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetClientesId), new { Id = cliente.Id }, cliente);
@@ -48,7 +60,7 @@ namespace ClientesAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult AtualizaCliente(int id, [FromBody] Cliente clienteNovo)
+        public IActionResult AtualizaCliente(int id, [FromBody] AtualizarClienteDto clienteDto)
         {
             Cliente cliente = _context.Clientes.FirstOrDefault(cliente => cliente.Id == id);
             if (cliente == null)
@@ -56,13 +68,13 @@ namespace ClientesAPI.Controllers
                 return NotFound();
             }
 
-
-            cliente.Nome = clienteNovo.Nome;
-            cliente.Telefone = clienteNovo.Telefone;
-            cliente.DataNascimento = clienteNovo.DataNascimento;
-            cliente.ValorUltimaCompra = clienteNovo.ValorUltimaCompra;
-            cliente.ValorTotalCompras = clienteNovo.ValorTotalCompras;
-
+            cliente.Nome = clienteDto.Nome;
+            cliente.Telefone = clienteDto.Telefone;
+            cliente.DataNascimento = clienteDto.DataNascimento;
+            cliente.DataUltimaCompra = clienteDto.DataUltimaCompra;
+            cliente.ValorUltimaCompra = clienteDto.ValorUltimaCompra;
+            cliente.ValorTotalCompras = clienteDto.ValorTotalCompras;
+            
             _context.SaveChanges();
             return NoContent();
         }
