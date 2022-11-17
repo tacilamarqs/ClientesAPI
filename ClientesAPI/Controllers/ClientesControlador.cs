@@ -1,6 +1,7 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
 using ClientesAPI.Data;
 using ClientesAPI.Data.Dtos;
+using ClientesAPI.Data.Dtos.Clientes;
 using ClientesAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,34 +16,26 @@ namespace ClientesAPI.Controllers
     public class ClientesControlador : ControllerBase
     {
         private readonly DataContext _context;
+        private IMapper _mapper;
 
-        public ClientesControlador(DataContext context) {
-            
+        public ClientesControlador(DataContext context, IMapper mapper)
+        {
             _context = context;
+            _mapper = mapper;
         }
 
 
         [HttpPost]
         public IActionResult AdicionaCliente([FromBody] CriarClienteDto clienteDto)
         {
-            Cliente cliente = new Cliente
-            {
-                Nome = clienteDto.Nome,
-                Telefone = clienteDto.Telefone,
-                DataNascimento = clienteDto.DataNascimento,
-                DataUltimaCompra = clienteDto.DataUltimaCompra,
-                ValorUltimaCompra = clienteDto.ValorUltimaCompra,
-                ValorTotalCompras = clienteDto.ValorTotalCompras
-
-            };
-
+            Cliente cliente = _mapper.Map<Cliente>(clienteDto);
             _context.Clientes.Add(cliente);
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetClientesId), new { Id = cliente.Id }, cliente);
         }
 
         [HttpGet]
-        public IEnumerable<Cliente> GetClientes()
+        public IEnumerable<Cliente> GetClientes([FromQuery] string cliente)
         {
             return _context.Clientes;
         }
@@ -68,19 +61,13 @@ namespace ClientesAPI.Controllers
                 return NotFound();
             }
 
-            cliente.Nome = clienteDto.Nome;
-            cliente.Telefone = clienteDto.Telefone;
-            cliente.DataNascimento = clienteDto.DataNascimento;
-            cliente.DataUltimaCompra = clienteDto.DataUltimaCompra;
-            cliente.ValorUltimaCompra = clienteDto.ValorUltimaCompra;
-            cliente.ValorTotalCompras = clienteDto.ValorTotalCompras;
-            
+            _mapper.Map(clienteDto, cliente);
             _context.SaveChanges();
             return NoContent();
         }
 
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public IActionResult DeletarCliente(int id)
         {
             Cliente cliente = _context.Clientes.FirstOrDefault(cliente => cliente.Id == id);
@@ -89,7 +76,7 @@ namespace ClientesAPI.Controllers
                 return NotFound();
             }
 
-            _context.Clientes.Remove(cliente);
+            _context.Remove(cliente);
             _context.SaveChanges();
             return NoContent();
 
