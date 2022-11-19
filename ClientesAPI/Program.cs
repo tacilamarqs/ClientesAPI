@@ -2,9 +2,21 @@ using ClientesAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      builder =>
+                      {
+                          builder.AllowAnyHeader()
+                                 .AllowAnyMethod() 
+                                 .AllowAnyOrigin();
+                      });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DataContext> (options =>
@@ -26,6 +38,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
